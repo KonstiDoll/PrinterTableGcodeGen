@@ -22,25 +22,93 @@
             </div>
             <div id="controls">
                 <button
-                    class="flex w-fit flex-col items-center rounded-xl p-2 bg-sky-400/50  hover:bg-sky-400/70 active:bg-sky-400/90 ">
+                    class="flex w-fit flex-col items-center rounded-xl p-2 bg-sky-400/50  hover:bg-sky-400/70 active:bg-sky-400/90 "
+                    @click="loadSVG">
                     <PhotoIcon class="h-16" />
                     <div>Features extrahieren</div>
                 </button>
             </div>
+
+            <div id="svgcontainer"></div>
 
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { BeakerIcon, CubeIcon, PhotoIcon } from '@heroicons/vue/24/solid'
+import { CubeIcon, PhotoIcon } from '@heroicons/vue/24/solid'
 import { ref } from 'vue';
 // import { uploadImage } from '../utils/backend_services';
 const loadedFile = ref<File>()
-const uploadableImage = ref<File[]>([])
+const uploadedFile = ref<File[]>([])
 const handleImageUpload = (e: any) => {
-    uploadableImage.value = e.target.files;
-    uploadImage(uploadableImage.value);
+    uploadedFile.value = e.target.files;
+    if(uploadedFile.value.length > 0)
+        {loadedFile.value = uploadedFile.value[0];}
+    loadSVG();
 }
-</script>
 
+function loadSVG() {
+    fetch('/public/test.svg') // Adjust the path to where your SVG is located
+        .then(response => response.text())
+        .then(svgContent => {
+            // console.log(svgContent); // Log the SVG content to the
+            //parse the SVG content
+            const parser = new DOMParser();
+            const svg = parser.parseFromString(svgContent, 'image/svg+xml').documentElement;
+            // console.log(svg);
+            // get all geometry from the SVG
+            const paths = svg.querySelectorAll('path');
+            // console.log(paths);
+            paths.forEach((path: any) => {
+                const gPath = {d:path.getAttribute('d')}
+                const gParts = gPath.d.split(' ');
+                const gcode = createGcodeFromPath_M(gParts);
+                console.log(gcode)
+            });
+            const rects = svg.querySelectorAll('rect');
+            console.log(rects);
+    
+        })
+        .catch(error => console.error('Error loading SVG:', error));
+}
+
+const createGcodeFromPath_M = (pathParts: string[]):string => {
+    // create Gcode from path
+    const down = ref(false);
+    const first = ref(true);
+    const drawingSpeed = 'F3000';
+    const travelingSpeed = 'F6000';
+    let gCode = '';
+    pathParts.forEach((part: string) => {
+        if(part === 'M') {
+            down.value = true;
+        }
+        else if(down.value) {
+            if(part.split(',').length === 2) {
+                const {x,y} = {x: part.split(',')[0], y: part.split(',')[1]};
+                const GIndicator = first.value ? 'G0' : 'G1';
+                const speed = first.value ? travelingSpeed : drawingSpeed;
+                const gCodeLine = GIndicator + ' X' + x + ' Y' + y + ' ' + speed +'\n';
+               
+                // console.log(gCodeLine);
+                gCode += gCodeLine;
+                if(first.value){
+                    const debugLine = ';start drawing here' + '\n';
+                    gCode += debugLine;
+                }
+                first.value = false;
+            }
+            else{
+                console.log('unsuspected part:', part);
+                debugger
+            }
+        }
+       
+    })
+
+    return gCode
+
+}
+
+</script>

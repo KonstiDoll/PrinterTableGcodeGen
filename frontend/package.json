@@ -15,6 +15,7 @@
     "vue": "^3.3.11"
   },
   "devDependencies": {
+    "@types/snapsvg": "^0.5.8",
     "@vitejs/plugin-vue": "^4.5.2",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.33",
