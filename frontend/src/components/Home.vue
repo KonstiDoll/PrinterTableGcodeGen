@@ -1,6 +1,7 @@
 <template>
     <div id="mainContainer" class="relative flex flex-row h-full w-full p-2">
-        <div id='sidebar' class="flex flex-col col h-full bg-slate-200 rounded-xl overflow-hidden p-2 space-y-4 shrink-0">
+        <div id='sidebar'
+            class="flex flex-col col h-full bg-slate-200 rounded-xl overflow-hidden p-2 space-y-4 shrink-0">
             <div class="text-slate-800 font-semibold text-lg text-center p-2">Image-Opencv-Plotter.tech</div>
             <button class="w-fit mx-auto rounded-xl p-2 bg-slate-400 hover:bg-slate-500 active:bg-slate-600 ">
                 <PhotoIcon class="h-16" />
@@ -28,23 +29,35 @@
                     <div>Features extrahieren</div>
                 </button>
             </div>
-            <ThreejsScene />
+            <ThreejsScene/>
         </div>
-        
+
     </div>
 </template>
 
 <script setup lang="ts">
 import { CubeIcon, PhotoIcon } from '@heroicons/vue/24/solid'
-import { ref } from 'vue';
+import { markRaw, ref } from 'vue';
 import ThreejsScene from './ThreejsScene.vue';
-// import { uploadImage } from '../utils/backend_services';
+import * as THREE from 'three';
+import { getThreejsObjectFromSvg } from '../utils/threejs_services';
+import { useMainStore } from '../store';
+
+const store = useMainStore();
 const loadedFile = ref<File>()
 const uploadedFile = ref<File[]>([])
 const handleImageUpload = (e: any) => {
     uploadedFile.value = e.target.files;
-    if (uploadedFile.value.length > 0) { loadedFile.value = uploadedFile.value[0]; }
-    loadSVG();
+    if (uploadedFile.value.length > 0) {
+        loadedFile.value = uploadedFile.value[0];
+        const reader = new FileReader();
+        reader.onload = async function (event) {
+            const contents = event.target.result as string;
+            const shapeGeoGroup = await getThreejsObjectFromSvg(contents);
+            store.setShapeGeometry(markRaw(shapeGeoGroup));
+        };  
+        reader.readAsText(loadedFile.value);      
+    }
 }
 
 function loadSVG() {
@@ -67,7 +80,6 @@ function loadSVG() {
             });
             const rects = svg.querySelectorAll('rect');
             console.log(rects);
-
         })
         .catch(error => console.error('Error loading SVG:', error));
 }
@@ -103,11 +115,8 @@ const createGcodeFromPath_M = (pathParts: string[]): string => {
                 debugger
             }
         }
-
     })
-
     return gCode
-
 }
 
 </script>
