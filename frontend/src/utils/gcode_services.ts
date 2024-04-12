@@ -1,22 +1,51 @@
 import * as THREE from 'three';
+import { ref } from 'vue';
 
-export function createGcodeFromLineGroup(lineGeoGroup: THREE.Group): string {
+type Pen = {
+    penUp: number,
+    penDown: number
+}
+const drawingSpeed = 3000;
+const travelSpeed = 15000;
+
+const penDrawingHeightDict: { [key: string]: Pen } = { 'stabilo': { penDown: 13, penUp: 25 } };
+
+export function createGcodeFromLineGroup(lineGeoGroup: THREE.Group, toolNumber: number = 1, penType: string = 'stabilo'): string {
+    const penUp = penDrawingHeightDict[penType].penUp;
+    const moveUUp = 'G1 U' + penUp + ' F6000\n'
+    const penDown = penDrawingHeightDict[penType].penDown;
+    const moveUDown = 'G1 U' + penDown + ' F6000\n'
+    // debugger
     let gCode = '';
-    lineGeoGroup.children.forEach((lineGeo: any) => {
-        const gcodeLine = createGcodeFromLine(lineGeo);
+    const startingGcode = 'G90\nG21\n'
+    const grabTool = 'M98 P"/macros/grab_tool_' + toolNumber + '"\n'
+    const moveToDrawingHeight = 'M98 P"/macros/move_to_drawingHeight_' + penType + '"\n'
+
+    gCode += startingGcode + grabTool + moveToDrawingHeight + moveUUp;
+    lineGeoGroup.children.forEach((lineGeo: THREE.Line) => {
+        const gcodeLine = createGcodeFromLine(lineGeo, moveUDown);
+
         gCode += gcodeLine;
+        gCode += moveUUp;
     });
     return gCode;
 }
-function createGcodeFromLine(lineGeo: any): string {
+function createGcodeFromLine(lineGeo: THREE.Line, moveUDown: string): string {
     let gcode = '';
+    const first = ref(true);
+    let speed = travelSpeed;
     lineGeo.geometry.attributes.position.array.forEach((pos: any, index: number) => {
         if (index % 3 === 0) {
             const x = pos.toFixed(2);
             const y = lineGeo.geometry.attributes.position.array[index + 1].toFixed(2);
             const z = lineGeo.geometry.attributes.position.array[index + 2].toFixed(2);
-            const gcodeLine = 'G1 X' + x + ' Y' + y + ' Z' + z + ' F3000\n';
+            const gcodeLine = 'G1 X' + x + ' Y' + y + ' Z' + z + ' F' + speed + '\n';
             gcode += gcodeLine;
+            if (first.value) {
+                gcode += moveUDown;
+                first.value = false;
+                speed = drawingSpeed;
+            }
         }
     });
     return gcode;
