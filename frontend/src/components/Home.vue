@@ -24,12 +24,16 @@
             <div id="controls">
                 <button
                     class="flex w-fit flex-col items-center rounded-xl p-2 bg-sky-400/50  hover:bg-sky-400/70 active:bg-sky-400/90 "
-                    @click="loadSVG">
+                    @click="generateGcode">
                     <PhotoIcon class="h-16" />
-                    <div>Features extrahieren</div>
+                    <div>GCODE generieren</div>
                 </button>
             </div>
-            <ThreejsScene/>
+            <div class="flex flex-row">
+                <ThreejsScene/>
+                <textarea class="h-[512px] w-[512px] ml-4 bg-slate-100" v-model="gCode" name="" id=""></textarea>
+
+            </div>
         </div>
 
     </div>
@@ -42,10 +46,11 @@ import ThreejsScene from './ThreejsScene.vue';
 import * as THREE from 'three';
 import { getThreejsObjectFromSvg } from '../utils/threejs_services';
 import { useMainStore } from '../store';
-
+import { createGcodeFromLineGroup } from '../utils/gcode_services';
 const store = useMainStore();
 const loadedFile = ref<File>()
 const uploadedFile = ref<File[]>([])
+const gCode = ref<string>('')
 const handleImageUpload = (e: any) => {
     uploadedFile.value = e.target.files;
     if (uploadedFile.value.length > 0) {
@@ -53,10 +58,18 @@ const handleImageUpload = (e: any) => {
         const reader = new FileReader();
         reader.onload = async function (event) {
             const contents = event.target.result as string;
-            const shapeGeoGroup = await getThreejsObjectFromSvg(contents);
-            store.setShapeGeometry(markRaw(shapeGeoGroup));
+            const lineGeoGroup = await getThreejsObjectFromSvg(contents);
+            store.setLineGeometry(markRaw(lineGeoGroup));
         };  
         reader.readAsText(loadedFile.value);      
+    }
+}
+const generateGcode = () => {
+    const lineGeoGroup = store.lineGeometry;
+    if (lineGeoGroup) {
+        const gcode = createGcodeFromLineGroup(lineGeoGroup);
+        // console.log(gcode);
+        gCode.value = gcode;
     }
 }
 

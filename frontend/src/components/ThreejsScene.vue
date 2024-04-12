@@ -10,11 +10,9 @@ import * as THREE from 'three';
 import { useMainStore } from '../store';
 const store = useMainStore();
 const addableObject = shallowRef<THREE.Group>();
-watch(() => store.shapeGeometry, (newVal) => {
+watch(() => store.lineGeometry, (newVal) => {
     if (newVal) {
-        console.log(newVal);
         addableObject.value = markRaw(newVal);
-        debugger
         scene.add(addableObject.value);
     }
 })
