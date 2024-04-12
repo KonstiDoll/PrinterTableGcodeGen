@@ -9,6 +9,12 @@
             <button class="w-fit mx-auto rounded-xl p-2 bg-slate-400 hover:bg-slate-500 active:bg-slate-600 ">
                 <CubeIcon class="h-16" />
             </button>
+            <div class="w-full h-fit bg-slate-800 p-2 overflow-scroll">
+
+                <div v-for="(pen, index) in pens" :key=index class="bg-slate-400 h-20 w-20 rounded-lg flex flex-col items-center justify-center hover:bg-slate-500 hover:cursor-pointer active:bg-orange-700" :class="activePenIndex==index?'!bg-orange-700':''  " @click="setActivePenIndex(index)">
+                    <div>{{pen.name}}</div>
+                </div>
+            </div>
 
         </div>
         <div id="content" class="relative flex flex-col p-6 w-full bg-slate-200/0 rounded-xl">
@@ -51,6 +57,15 @@ const store = useMainStore();
 const loadedFile = ref<File>()
 const uploadedFile = ref<File[]>([])
 const gCode = ref<string>('')
+const pens = [
+    { name: 'STABILO'},
+    { name: 'POSCA'},
+    { name: 'PINSEL'},
+]
+const activePenIndex = ref(0);
+const setActivePenIndex=(index:number)=>{
+    activePenIndex.value = index;
+}
 const handleImageUpload = (e: any) => {
     uploadedFile.value = e.target.files;
     if (uploadedFile.value.length > 0) {
@@ -68,7 +83,6 @@ const generateGcode = () => {
     const lineGeoGroup = store.lineGeometry;
     if (lineGeoGroup) {
         const gcode = createGcodeFromLineGroup(lineGeoGroup);
-        // console.log(gcode);
         gCode.value = gcode;
     }
 }
