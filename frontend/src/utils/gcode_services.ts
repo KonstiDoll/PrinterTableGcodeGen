@@ -8,7 +8,7 @@ type Pen = {
 const drawingSpeed = 3000;
 const travelSpeed = 15000;
 
-const penDrawingHeightDict: { [key: string]: Pen } = { 'stabilo': { penDown: 13, penUp: 25 } };
+const penDrawingHeightDict: { [key: string]: Pen } = { 'stabilo': { penDown: 13, penUp: 33 }};
 
 export function createGcodeFromLineGroup(lineGeoGroup: THREE.Group, toolNumber: number = 1, penType: string = 'stabilo'): string {
     const penUp = penDrawingHeightDict[penType].penUp;
@@ -19,6 +19,7 @@ export function createGcodeFromLineGroup(lineGeoGroup: THREE.Group, toolNumber: 
     let gCode = '';
     const startingGcode = 'G90\nG21\n'
     const grabTool = 'M98 P"/macros/grab_tool_' + toolNumber + '"\n'
+    const placeTool = 'M98 P"/macros/place_tool_' + toolNumber + '"\n'
     const moveToDrawingHeight = 'M98 P"/macros/move_to_drawingHeight_' + penType + '"\n'
 
     gCode += startingGcode + grabTool + moveToDrawingHeight + moveUUp;
@@ -28,6 +29,8 @@ export function createGcodeFromLineGroup(lineGeoGroup: THREE.Group, toolNumber: 
         gCode += gcodeLine;
         gCode += moveUUp;
     });
+    gCode += placeTool;
+    gCode += 'G1 Y0 F15000\n';
     return gCode;
 }
 function createGcodeFromLine(lineGeo: THREE.Line, moveUDown: string): string {
@@ -39,7 +42,7 @@ function createGcodeFromLine(lineGeo: THREE.Line, moveUDown: string): string {
             const x = pos.toFixed(2);
             const y = lineGeo.geometry.attributes.position.array[index + 1].toFixed(2);
             const z = lineGeo.geometry.attributes.position.array[index + 2].toFixed(2);
-            const gcodeLine = 'G1 X' + x + ' Y' + y + ' Z' + z + ' F' + speed + '\n';
+            const gcodeLine = 'G1 X' + x + ' Y' + y + ' F' + speed + '\n';
             gcode += gcodeLine;
             if (first.value) {
                 gcode += moveUDown;

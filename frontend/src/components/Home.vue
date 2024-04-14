@@ -11,8 +11,11 @@
             </button>
             <div class="w-full h-fit bg-slate-800 p-2 overflow-scroll">
 
-                <div v-for="(pen, index) in pens" :key=index class="bg-slate-400 h-20 w-20 rounded-lg flex flex-col items-center justify-center hover:bg-slate-500 hover:cursor-pointer active:bg-orange-700" :class="activePenIndex==index?'!bg-orange-700':''  " @click="setActivePenIndex(index)">
+                <!-- <div v-for="(pen, index) in pens" :key=index class="bg-slate-400 h-20 w-20 rounded-lg flex flex-col items-center justify-center hover:bg-slate-500 hover:cursor-pointer active:bg-orange-700" :class="activePenIndex==index?'!bg-orange-700':''  " @click="setActivePenIndex(index)">
                     <div>{{pen.name}}</div>
+                </div> -->
+                <div v-for="(tool, index) in tools" :key=index class="bg-slate-400 h-20 w-20 rounded-lg flex flex-col items-center justify-center hover:bg-slate-500 hover:cursor-pointer active:bg-orange-700" :class="activeToolIndex==index+1?'!bg-orange-700':''  " @click="setActiveToolIndex(index+1)">
+                    <div>{{tool.name}}</div>
                 </div>
             </div>
 
@@ -62,10 +65,26 @@ const pens = [
     { name: 'POSCA'},
     { name: 'PINSEL'},
 ]
+const tools = [
+    { name: '1'},
+    { name: '2'},
+    { name: '3'},
+    { name: '4'},
+    { name: '5'},
+    { name: '6'},
+    { name: '7'},
+    { name: '8'},
+    { name: '9'},
+]
 const activePenIndex = ref(0);
+const activeToolIndex=ref(1)
 const setActivePenIndex=(index:number)=>{
     activePenIndex.value = index;
 }
+const setActiveToolIndex=(index:number)=>{
+    activeToolIndex.value = index;
+}
+
 const handleImageUpload = (e: any) => {
     uploadedFile.value = e.target.files;
     if (uploadedFile.value.length > 0) {
@@ -82,7 +101,7 @@ const handleImageUpload = (e: any) => {
 const generateGcode = () => {
     const lineGeoGroup = store.lineGeometry;
     if (lineGeoGroup) {
-        const gcode = createGcodeFromLineGroup(lineGeoGroup);
+        const gcode = createGcodeFromLineGroup(lineGeoGroup, activeToolIndex.value);
         gCode.value = gcode;
     }
 }
