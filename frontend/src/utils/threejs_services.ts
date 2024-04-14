@@ -42,7 +42,7 @@ export function getThreejsObjectFromSvg(svgContent: string): Promise<THREE.Group
     const closedPaths = paths.filter((path) => path.userData.isClosed);
     const closedShapes = createShapesForClosedPaths(closedPaths);
     closedShapes.forEach((shape) => {
-        group.add(shape);
+        // group.add(shape);
     });
 
     return group;

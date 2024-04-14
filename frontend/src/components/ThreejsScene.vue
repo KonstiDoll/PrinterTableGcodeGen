@@ -13,6 +13,7 @@ const addableObject = shallowRef<THREE.Group>();
 watch(() => store.lineGeometry, (newVal) => {
     if (newVal) {
         addableObject.value = markRaw(newVal);
+        addableObject.value.rotateX(Math.PI);
         scene.add(addableObject.value);
     }
 })
@@ -23,8 +24,10 @@ const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 const domElement = renderer.domElement;
+camera.position.set(0, 0, 5000);
 const controller = new OrbitControls(camera, domElement);
-camera.position.set(0, 0, 1000);
+controller.enableDamping = true;
+controller.update();
 const geometry = new THREE.BoxGeometry(100, 100, 100);
 const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 const cube = new THREE.Mesh(geometry, material);
@@ -51,6 +54,7 @@ const setSize = () => {
 const animate = function () {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    controller.update();
 };  
 </script>
 
