@@ -25,7 +25,6 @@ export function createGcodeFromLineGroup(lineGeoGroup: THREE.Group, toolNumber: 
     gCode += startingGcode + grabTool + moveToDrawingHeight + moveUUp;
     lineGeoGroup.children.forEach((lineGeo: THREE.Line) => {
         const gcodeLine = createGcodeFromLine(lineGeo, moveUDown);
-
         gCode += gcodeLine;
         gCode += moveUUp;
     });

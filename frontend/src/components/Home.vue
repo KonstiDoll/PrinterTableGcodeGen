@@ -2,13 +2,7 @@
     <div id="mainContainer" class="relative flex flex-row h-full w-full p-2">
         <div id='sidebar'
             class="flex flex-col col h-full bg-slate-200 rounded-xl overflow-hidden p-2 space-y-4 shrink-0">
-            <div class="text-slate-800 font-semibold text-lg text-center p-2">Image-Opencv-Plotter.tech</div>
-            <button class="w-fit mx-auto rounded-xl p-2 bg-slate-400 hover:bg-slate-500 active:bg-slate-600 ">
-                <PhotoIcon class="h-16" />
-            </button>
-            <button class="w-fit mx-auto rounded-xl p-2 bg-slate-400 hover:bg-slate-500 active:bg-slate-600 ">
-                <CubeIcon class="h-16" />
-            </button>
+            <div class="text-slate-800 font-semibold text-lg text-center p-2">PrinterTableGCodeGen</div>
             <div class="w-full h-fit bg-slate-800 p-2 overflow-scroll">
 
                 <!-- <div v-for="(pen, index) in pens" :key=index class="bg-slate-400 h-20 w-20 rounded-lg flex flex-col items-center justify-center hover:bg-slate-500 hover:cursor-pointer active:bg-orange-700" :class="activePenIndex==index?'!bg-orange-700':''  " @click="setActivePenIndex(index)">
@@ -21,13 +15,12 @@
 
         </div>
         <div id="content" class="relative flex flex-col p-6 w-full bg-slate-200/0 rounded-xl">
-
             <div
                 class="relative flex flex-col justify-center items-center text-center w-full !h-28 p-6 hover:bg-slate-200/80  outline-dashed outline-2 rounded-lg outline-slate-300 hover:outline-offset-4">
                 <button>Datei
                     hochladen</button>
                 <label class="text-slate-600">oder hier ablegen</label>
-                <input class="opacity-0 absolute w-full h-full" type="file" @change="handleImageUpload" accept="*" />
+                <input class="opacity-0 absolute w-full h-full" type="file" @change="handleFileUpload" accept="*" />
 
             </div>
             <div id="controls">
@@ -85,13 +78,13 @@ const setActiveToolIndex=(index:number)=>{
     activeToolIndex.value = index;
 }
 
-const handleImageUpload = (e: any) => {
+const handleFileUpload = (e: any) => {
     uploadedFile.value = e.target.files;
     if (uploadedFile.value.length > 0) {
         loadedFile.value = uploadedFile.value[0];
         const reader = new FileReader();
         reader.onload = async function (event) {
-            const contents = event.target.result as string;
+            const contents = event.target?.result as string;
             const lineGeoGroup = await getThreejsObjectFromSvg(contents);
             store.setLineGeometry(markRaw(lineGeoGroup));
         };  
